@@ -54,6 +54,38 @@ class MidiMapping:
     midi_channel: int
     cc_number: int
 
+def parse_section_and_number(s: str) -> Tuple[str, int]:
+    raw = s.strip().lower()
+    if raw.startswith("channel"):
+        return ("channel", int(raw.split()[-1]))
+    if raw.startswith("bus") or raw.startswith("buss"):
+        return ("bus", int(raw.split()[-1]))
+    if raw.startswith("aux"):
+        return ("aux", int(raw.split()[-1]))
+    if "master" in raw:
+        return ("master", 1)
+    parts = raw.split()
+    try:
+        return (parts[0], int(parts[-1]))
+    except Exception:
+        return (raw, 1)
+
+def load_midi_mappings(csv_path: str) -> Dict[Tuple[str,int,str], MidiMapping]:
+    mappings: Dict[Tuple[str,int,str], MidiMapping] = {}
+    if not os.path.isfile(csv_path):
+        raise FileNotFoundError(f"CSV not found at {csv_path}")
+    with open(csv_path, newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            section_raw = row.get('Channel_Bus_Aux', '')
+            type_raw = row.get('Type', '').strip().lower()
+            midi_ch = int(row.get('MIDI Channel', '1'))
+            cc_num = int(row.get('CC_Number', '0'))
+            section, number = parse_section_and_number(section_raw)
+            key = (section, number, type_raw)
+            mappings[key] = MidiMapping(section, number, type_raw, midi_ch, cc_num)
+    return mappings
+
 class SettingsManager:
     def __init__(self, settings_file: str = SETTINGS_FILE):
         self.settings_file = settings_file
@@ -430,456 +462,424 @@ class MidiManager(QtCore.QObject):
         self._outport.send(mido.Message('control_change', channel=ch0, control=int(cc), value=val))
         self.midi_message_sent.emit(channel_1, cc, val)
 
-    def parse_section_and_number(s: str) -> Tuple[str, int]:
-        raw = s.strip().lower()
-        if raw.startswith("channel"):
-            return ("channel", int(raw.split()[-1]))
-        if raw.startswith("bus") or raw.startswith("buss"):
-            return ("bus", int(raw.split()[-1]))
-        if raw.startswith("aux"):
-            return ("aux", int(raw.split()[-1]))
-        if "master" in raw:
-            return ("master", 1)
-        parts = raw.split()
-        try:
-            return (parts[0], int(parts[-1]))
-        except Exception:
-            return (raw, 1)
-
-    def load_midi_mappings(csv_path: str) -> Dict[Tuple[str,int,str], MidiMapping]:
-        mappings: Dict[Tuple[str,int,str], MidiMapping] = {}
-        if not os.path.isfile(csv_path):
-            raise FileNotFoundError(f"CSV not found at {csv_path}")
-        with open(csv_path, newline='') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                section_raw = row.get('Channel_Bus_Aux', '')
-                type_raw = row.get('Type', '').strip().lower()
-                midi_ch = int(row.get('MIDI Channel', '1'))
-                cc_num = int(row.get('CC_Number', '0'))
-                section, number = parse_section_and_number(section_raw)
-                key = (section, number, type_raw)
-                mappings[key] = MidiMapping(section, number, type_raw, midi_ch, cc_num)
-        return mappings
-
-    class ScribbleStripTextEdit(QtWidgets.QTextEdit):
-        textCommitted = QtCore.pyqtSignal(str)
-
-        def __init__(self, parent=None):
-            super().__init__(parent)
-            self.setMaximumHeight(60)
-            self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-            self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-            self.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
-            self.setStyleSheet("""
-                QTextEdit {
-                    background-color: #333333; color: white; border: 1px solid #666666;
-                    border-radius: 3px; padding: 2px; font-size: 10px; font-family: Arial;
-                }
-                QTextEdit:focus { border: 2px solid #0078d4; background-color: #444444; }
-            """)
-            self.textChanged.connect(self._on_text_changed)
-
-        def _on_text_changed(self):
-            text = self.toPlainText()
-            if len(text) > MAX_SCRIBBLE_LENGTH:
-                cursor = self.textCursor()
-                cursor.deletePreviousChar()
-
-        def _format_text_for_display(self, text: str) -> str:
-            if len(text) <= MAX_SCRIBBLE_CHARS_PER_ROW:
-                return text
-            else:
-                row1 = text[:MAX_SCRIBBLE_CHARS_PER_ROW]
-                row2 = text[MAX_SCRIBBLE_CHARS_PER_ROW:MAX_SCRIBBLE_LENGTH]
-                return f"{row1}\n{row2}"
-
-        def setText(self, text: str):
-            formatted = self._format_text_for_display(text)
-            super().setPlainText(formatted)
-
-        def getText(self) -> str:
-            return self.toPlainText().replace('\n', '')
-
-        def keyPressEvent(self, event: QtGui.QKeyEvent):
-            if event.key() in [QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter]:
-                self.clearFocus()
-            else:
-                super().keyPressEvent(event)
-
-        def focusOutEvent(self, event: QtGui.QFocusEvent):
-            super().focusOutEvent(event)
-            self.textCommitted.emit(self.getText())
-
-    class ScaleWidget(QtWidgets.QWidget):
-        def __init__(self, is_master=False, parent=None):
-            super().__init__(parent)
-            self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)
-            self.font_scale = 1.0
-            self.is_master = is_master
-
-        def set_scale(self, s: float):
-            self.font_scale = s
-            self.update()
-
-        def paintEvent(self, event: QtGui.QPaintEvent):
-            painter = QtGui.QPainter(self)
-            rect = self.rect().adjusted(6, 6, -6, -6)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
-
-            painter.setPen(QtGui.QPen(QtCore.Qt.gray, 1))
-            painter.drawLine(rect.right()-2, rect.top(), rect.right()-2, rect.bottom())
-
-            def y_for_cc(cc: int) -> int:
-                t = cc / 127.0
-                return int(rect.top() + (1.0 - t) * rect.height())
-
-            painter.setPen(QtGui.QPen(QtCore.Qt.black, 1))
-            font = painter.font()
-            font.setPointSizeF(max(7.0, BASE_SMALL_FONT * self.font_scale))
-            painter.setFont(font)
-
-            scale_points = MASTER_DB_POINTS if self.is_master else CHANNEL_DB_POINTS
-
-            for cc, label in scale_points:
-                y = y_for_cc(cc)
-                painter.drawLine(rect.right()-6, y, rect.right()-2, y)
-                text_rect = QtCore.QRect(rect.left(), y-8, rect.width()-8, 16)
-                painter.drawText(text_rect, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, label)
-
-    class CustomFaderSlider(QtWidgets.QSlider):
-        doubleClicked = QtCore.pyqtSignal()
-
-        def __init__(self, is_master=False, parent=None):
-            super().__init__(QtCore.Qt.Vertical, parent)
-            self.setRange(0, 127)
-            self.setInvertedAppearance(False)
-            self.setTickPosition(QtWidgets.QSlider.NoTicks)
-            self.is_master = is_master
-            self.current_value = MASTER_ZERO_DB_CC if is_master else FADER_ZERO_DB_CC
-            self.setStyleSheet(self._get_fader_style())
-
-        def _interpolate_color(self, start_rgb: tuple, end_rgb: tuple, factor: float) -> str:
-            factor = max(0.0, min(1.0, factor))
-            r = int(start_rgb[0] + (end_rgb[0] - start_rgb[0]) * factor)
-            g = int(start_rgb[1] + (end_rgb[1] - start_rgb[1]) * factor)
-            b = int(start_rgb[2] + (end_rgb[2] - start_rgb[2]) * factor)
-            return f"rgb({r}, {g}, {b})"
-
-        def _get_fader_color(self, value: int) -> str:
-            zero_db_value = MASTER_ZERO_DB_CC if self.is_master else FADER_ZERO_DB_CC
-        
-            if value == zero_db_value:
-                return "#00ff00"
-            elif value > zero_db_value:
-                factor = (value - zero_db_value) / (127 - zero_db_value)
-                start_color = (237, 190, 0)
-                end_color = (255, 0, 0)
-                return self._interpolate_color(start_color, end_color, factor)
-            else:
-                factor = (zero_db_value - value) / zero_db_value
-                start_color = (0, 186, 0)
-                end_color = (0, 60, 0)
-                return self._interpolate_color(start_color, end_color, factor)
-
-        def _get_fader_style(self):
-            color = self._get_fader_color(self.current_value)
-            return f"""
-                QSlider:groove:vertical {{
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #333333, stop:0.5 #555555, stop:1 #333333);
-                    width: 8px; border: 1px solid #222222; border-radius: 2px;
-                }}
-                QSlider:handle:vertical {{
-                    background: {color}; border: 1px solid #444444; height: 20px; width: 24px; margin: 0px -8px; border-radius: 3px;
-                }}
-                QSlider:handle:vertical:pressed {{
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00aa00, stop:0.5 #00dd00, stop:1 #00aa00);
-                }}
-            """
-
-        def update_color(self, value: int):
-            self.current_value = value
-            self.setStyleSheet(self._get_fader_style())
-
-        def paintEvent(self, event):
-            super().paintEvent(event)
-            painter = QtGui.QPainter(self)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
-            opt = QtWidgets.QStyleOptionSlider()
-            self.initStyleOption(opt)
-            handle = self.style().subControlRect(QtWidgets.QStyle.CC_Slider, opt, QtWidgets.QStyle.SC_SliderHandle, self)
-            painter.setPen(QtGui.QPen(QtCore.Qt.black, 2))
-            center_y = handle.center().y()
-            painter.drawLine(handle.left() + 2, center_y, handle.right() - 2, center_y)
-
-        def mouseDoubleClickEvent(self, e: QtGui.QMouseEvent):
-            if e.button() == QtCore.Qt.LeftButton:
-                self.doubleClicked.emit()
-
-    class FaderWithScale(QtWidgets.QWidget):
-        valueChanged = QtCore.pyqtSignal(int)
-
-        def __init__(self, initial=FADER_ZERO_DB_CC, h_scale=1.0, v_scale=1.0, is_master=False, is_stereo=False, parent=None):
-            super().__init__(parent)
-            self.h_scale_factor = h_scale
-            self.v_scale_factor = v_scale
-            self.is_master = is_master
-            self.is_stereo = is_stereo
-            self.slider = CustomFaderSlider(is_master=is_master)
-            self.slider.setValue(initial)
-
-            self.scale = ScaleWidget(is_master=is_master)
-            self.scale.setMinimumWidth(46)
-
-            layout = QtWidgets.QHBoxLayout(self)
-            layout.setContentsMargins(2,2,2,2)
-            layout.setSpacing(6)
-            layout.addWidget(self.scale)
-            layout.addWidget(self.slider)
-
-            self.slider.valueChanged.connect(self._on_value_changed)
-            self.slider.doubleClicked.connect(self.reset_to_zero_db)
-
-            self.apply_scale(self.h_scale_factor, self.v_scale_factor)
-            self.slider.update_color(initial)
-
-        def _on_value_changed(self, value):
-            self.slider.update_color(value)
-            self.valueChanged.emit(value)
-
-        def reset_to_zero_db(self):
-            zero_db_value = MASTER_ZERO_DB_CC if self.is_master else FADER_ZERO_DB_CC
-            self.slider.setValue(zero_db_value)
-
-        def setValue(self, v: int):
-            self.slider.blockSignals(True)
-            self.slider.setValue(int(max(0, min(127, v))))
-            self.slider.blockSignals(False)
-            self.slider.update_color(v)
-
-        def value(self) -> int:
-            return self.slider.value()
-
-        def apply_scale(self, h_scale: float, v_scale: float):
-            self.h_scale_factor = h_scale
-            self.v_scale_factor = v_scale
-            fader_h = int(BASE_FADER_HEIGHT * v_scale)
-            self.slider.setFixedHeight(fader_h)
-        
-            if self.is_stereo:
-                fader_w = int(40 * BASE_STEREO_FADER_WIDTH_MULTIPLIER * h_scale)
-                self.slider.setMinimumWidth(fader_w)
-        
-            self.scale.set_scale(min(h_scale, v_scale))
-
-    class PanDial(QtWidgets.QDial):
-        doubleClicked = QtCore.pyqtSignal()
-
-        def __init__(self, parent=None):
-            super().__init__(parent)
-            self.setStyleSheet(self._get_pan_style())
-
-        def _get_pan_style(self):
-            return """
-                QDial {
-                    background-color: #444444;
-                    border: 2px solid #666666;
-                    border-radius: 29px;
-                }
-            """
-
-        def update_color(self, value: int):
-            if value == PAN_CENTER_CC:
-                self.setStyleSheet(f"""
-                    QDial {{
-                        background-color: {PAN_CENTER_COLOR};
-                        border: 2px solid #00cc00;
-                        border-radius: 29px;
-                    }}
-                """)
-            else:
-                self.setStyleSheet(self._get_pan_style())
-
-        def mouseDoubleClickEvent(self, e: QtGui.QMouseEvent):
-            if e.button() == QtCore.Qt.LeftButton:
-                self.doubleClicked.emit()
-            super().mouseDoubleClickEvent(e)
-
-    class MuteButton(QtWidgets.QPushButton):
-        toggledCC = QtCore.pyqtSignal(int)
-
-        def __init__(self, parent=None):
-            super().__init__("MUTE", parent)
-            self.setCheckable(True)
-            self.update_style()
-            self.toggled.connect(self._on_toggled)
-
-        def _on_toggled(self, on: bool):
-            self.update_style()
-            self.toggledCC.emit(127 if on else 0)
-
-        def update_style(self):
-            if self.isChecked():
-                self.setStyleSheet("QPushButton { background-color: rgb(249,7,7); color: white; font-weight: bold; }")
-            else:
-                self.setStyleSheet("QPushButton { background-color: #444; color: black; }")
-
-        def set_from_cc(self, value: int):
-            on = (value >= 64)
-            self.blockSignals(True)
-            self.setChecked(on)
-            self.blockSignals(False)
-            self.update_style()
-
-class ChannelStrip(QtWidgets.QFrame):
-        scribbleTextChanged = QtCore.pyqtSignal(str, str)
-
-    def __init__(self, title: str, scribble_key: str = "", has_pan: bool=True, has_mute: bool=True, has_scribble: bool=True, h_scale: float=1.0, v_scale: float=1.0, is_master: bool=False, mono_stereo_manager=None, is_stereo_pair: bool=False, stereo_partner_num: int=0, parent=None):
-            super().__init__(parent)
-            self.h_scale_factor = h_scale
-            self.v_scale_factor = v_scale
-            self.is_master = is_master
-            self.is_stereo_pair = is_stereo_pair
-            self.stereo_partner_num = stereo_partner_num
-            self.scribble_key = scribble_key
-            self.mono_stereo_manager = mono_stereo_manager
-            self.stereo_partner_strip = None
-            self.setFrameShape(QtWidgets.QFrame.StyledPanel)
-
-            display_title = title
-            title_color = "black"
-        
-            if is_stereo_pair and stereo_partner_num > 0:
-                channel_num = int(scribble_key.split()[-1]) if scribble_key else 0
-                display_title = f"Ch {channel_num} - {stereo_partner_num}"
-                title_color = "rgb(20,20,225)"
-            elif scribble_key and "Channel" in scribble_key:
-                channel_num = int(scribble_key.split()[-1])
-                display_title = f"CH {channel_num}"
-
-            self.v = QtWidgets.QVBoxLayout(self)
-            self.v.setContentsMargins(6,6,6,6)
-            self.v.setSpacing(6)
-            self.setMinimumWidth(int(BASE_STRIP_WIDTH * self.h_scale_factor))
-
-            self.title_label = QtWidgets.QLabel(display_title)
-            self.title_label.setAlignment(QtCore.Qt.AlignCenter)
-            self.title_label.setStyleSheet(f"font-weight: bold; color: {title_color};")
-            self.v.addWidget(self.title_label)
-
-            if has_pan:
-                self.pan = PanDial()
-                self.pan.setRange(0,127)
-                self.pan.setValue(PAN_CENTER_CC)
-                self.pan.setNotchesVisible(True)
-                self.pan.doubleClicked.connect(self._pan_reset)
-                self.pan.valueChanged.connect(self._on_pan_changed)
-                self.v.addWidget(self.pan, 0, QtCore.Qt.AlignHCenter)
-
-                self.pan_value = QtWidgets.QLabel("C")
-                self.pan_value.setAlignment(QtCore.Qt.AlignCenter)
-                self.v.addWidget(self.pan_value)
-                self.pan.update_color(PAN_CENTER_CC)
-            else:
-                self.pan = None
-                self.pan_value = None
-
-            if has_mute:
-                self.mute = MuteButton()
-                self.v.addWidget(self.mute)
-            else:
-                self.mute = None
-
-            initial_val = MASTER_ZERO_DB_CC if is_master else FADER_ZERO_DB_CC
-            self.fader = FaderWithScale(initial=initial_val, h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=is_master, is_stereo=is_stereo_pair)
-            self.v.addWidget(self.fader, 1)
-
-            if has_scribble and not is_master:
-                self.scribble = ScribbleStripTextEdit()
-                self.scribble.textCommitted.connect(self._on_scribble_changed)
-                self.v.addWidget(self.scribble)
-            else:
-                self.scribble = None
-
-            if is_master:
-                self.v.addStretch(1)
-
-            self.apply_scale(self.h_scale_factor, self.v_scale_factor)
-
-    def set_stereo_partner(self, partner_strip):
-            self.stereo_partner_strip = partner_strip
-
-    def mirror_from_partner(self, control_type: str, value: int):
-            if control_type == "fader":
-                self.fader.setValue(value)
-            elif control_type == "pan" and self.pan:
-                self.pan.blockSignals(True)
-                self.pan.setValue(value)
-                self.pan.blockSignals(False)
-                self._on_pan_changed(value)
-            elif control_type == "mute" and self.mute:
-                self.mute.set_from_cc(value)
-
-    def sync_to_partner(self, control_type: str, value: int):
-            if self.stereo_partner_strip:
-                self.stereo_partner_strip.mirror_from_partner(control_type, value)
-
-    def set_scribble_text(self, text: str):
-            if self.scribble:
-                self.scribble.blockSignals(True)
-                self.scribble.setText(text)
-                self.scribble.blockSignals(False)
-
-    def _on_scribble_changed(self, new_text: str):
-            if self.scribble_key:
-                self.scribbleTextChanged.emit(self.scribble_key, new_text)
-
-    def _on_pan_changed(self, v: int):
-            if self.pan_value:
-                if v == 64:
-                    self.pan_value.setText("C")
-                elif v < 64:
-                    left_val = max(v - 64, -63)
-                    self.pan_value.setText(str(left_val))
-                else:
-                    self.pan_value.setText(str(v))
-
-            if self.pan:
-                self.pan.update_color(v)
-
-    def _pan_reset(self):
-            if self.pan:
-                self.pan.setValue(PAN_CENTER_CC)
+class ScribbleStripTextEdit(QtWidgets.QTextEdit):
+    textCommitted = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMaximumHeight(60)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
+        self.setStyleSheet("""
+            QTextEdit {
+                background-color: #333333; color: white; border: 1px solid #666666;
+                border-radius: 3px; padding: 2px; font-size: 10px; font-family: Arial;
+            }
+            QTextEdit:focus { border: 2px solid #0078d4; background-color: #444444; }
+        """)
+        self.textChanged.connect(self._on_text_changed)
+
+    def _on_text_changed(self):
+        text = self.toPlainText()
+        if len(text) > MAX_SCRIBBLE_LENGTH:
+            cursor = self.textCursor()
+            cursor.deletePreviousChar()
+
+    def _format_text_for_display(self, text: str) -> str:
+        if len(text) <= MAX_SCRIBBLE_CHARS_PER_ROW:
+            return text
+        else:
+            row1 = text[:MAX_SCRIBBLE_CHARS_PER_ROW]
+            row2 = text[MAX_SCRIBBLE_CHARS_PER_ROW:MAX_SCRIBBLE_LENGTH]
+            return f"{row1}\n{row2}"
+
+    def setText(self, text: str):
+        formatted = self._format_text_for_display(text)
+        super().setPlainText(formatted)
+
+    def getText(self) -> str:
+        return self.toPlainText().replace('\n', '')
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        if event.key() in [QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter]:
+            self.clearFocus()
+        else:
+            super().keyPressEvent(event)
+
+    def focusOutEvent(self, event: QtGui.QFocusEvent):
+        super().focusOutEvent(event)
+        self.textCommitted.emit(self.getText())
+
+class ScaleWidget(QtWidgets.QWidget):
+    def __init__(self, is_master=False, parent=None):
+        super().__init__(parent)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)
+        self.font_scale = 1.0
+        self.is_master = is_master
+
+    def set_scale(self, s: float):
+        self.font_scale = s
+        self.update()
+
+    def paintEvent(self, event: QtGui.QPaintEvent):
+        painter = QtGui.QPainter(self)
+        rect = self.rect().adjusted(6, 6, -6, -6)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+
+        painter.setPen(QtGui.QPen(QtCore.Qt.gray, 1))
+        painter.drawLine(rect.right()-2, rect.top(), rect.right()-2, rect.bottom())
+
+        def y_for_cc(cc: int) -> int:
+            t = cc / 127.0
+            return int(rect.top() + (1.0 - t) * rect.height())
+
+        painter.setPen(QtGui.QPen(QtCore.Qt.black, 1))
+        font = painter.font()
+        font.setPointSizeF(max(7.0, BASE_SMALL_FONT * self.font_scale))
+        painter.setFont(font)
+
+        scale_points = MASTER_DB_POINTS if self.is_master else CHANNEL_DB_POINTS
+
+        for cc, label in scale_points:
+            y = y_for_cc(cc)
+            painter.drawLine(rect.right()-6, y, rect.right()-2, y)
+            text_rect = QtCore.QRect(rect.left(), y-8, rect.width()-8, 16)
+            painter.drawText(text_rect, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, label)
+
+class CustomFaderSlider(QtWidgets.QSlider):
+    doubleClicked = QtCore.pyqtSignal()
+
+    def __init__(self, is_master=False, parent=None):
+        super().__init__(QtCore.Qt.Vertical, parent)
+        self.setRange(0, 127)
+        self.setInvertedAppearance(False)
+        self.setTickPosition(QtWidgets.QSlider.NoTicks)
+        self.is_master = is_master
+        self.current_value = MASTER_ZERO_DB_CC if is_master else FADER_ZERO_DB_CC
+        self.setStyleSheet(self._get_fader_style())
+
+    def _interpolate_color(self, start_rgb: tuple, end_rgb: tuple, factor: float) -> str:
+        factor = max(0.0, min(1.0, factor))
+        r = int(start_rgb[0] + (end_rgb[0] - start_rgb[0]) * factor)
+        g = int(start_rgb[1] + (end_rgb[1] - start_rgb[1]) * factor)
+        b = int(start_rgb[2] + (end_rgb[2] - start_rgb[2]) * factor)
+        return f"rgb({r}, {g}, {b})"
+
+    def _get_fader_color(self, value: int) -> str:
+        zero_db_value = MASTER_ZERO_DB_CC if self.is_master else FADER_ZERO_DB_CC
+    
+        if value == zero_db_value:
+            return "#00ff00"
+        elif value > zero_db_value:
+            factor = (value - zero_db_value) / (127 - zero_db_value)
+            start_color = (237, 190, 0)
+            end_color = (255, 0, 0)
+            return self._interpolate_color(start_color, end_color, factor)
+        else:
+            factor = (zero_db_value - value) / zero_db_value
+            start_color = (0, 186, 0)
+            end_color = (0, 60, 0)
+            return self._interpolate_color(start_color, end_color, factor)
+
+    def _get_fader_style(self):
+        color = self._get_fader_color(self.current_value)
+        return f"""
+            QSlider:groove:vertical {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #333333, stop:0.5 #555555, stop:1 #333333);
+                width: 8px; border: 1px solid #222222; border-radius: 2px;
+            }}
+            QSlider:handle:vertical {{
+                background: {color}; border: 1px solid #444444; height: 20px; width: 24px; margin: 0px -8px; border-radius: 3px;
+            }}
+            QSlider:handle:vertical:pressed {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00aa00, stop:0.5 #00dd00, stop:1 #00aa00);
+            }}
+        """
+
+    def update_color(self, value: int):
+        self.current_value = value
+        self.setStyleSheet(self._get_fader_style())
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+        opt = QtWidgets.QStyleOptionSlider()
+        self.initStyleOption(opt)
+        handle = self.style().subControlRect(QtWidgets.QStyle.CC_Slider, opt, QtWidgets.QStyle.SC_SliderHandle, self)
+        painter.setPen(QtGui.QPen(QtCore.Qt.black, 2))
+        center_y = handle.center().y()
+        painter.drawLine(handle.left() + 2, center_y, handle.right() - 2, center_y)
+
+    def mouseDoubleClickEvent(self, e: QtGui.QMouseEvent):
+        if e.button() == QtCore.Qt.LeftButton:
+            self.doubleClicked.emit()
+
+class FaderWithScale(QtWidgets.QWidget):
+    valueChanged = QtCore.pyqtSignal(int)
+
+    def __init__(self, initial=FADER_ZERO_DB_CC, h_scale=1.0, v_scale=1.0, is_master=False, is_stereo=False, parent=None):
+        super().__init__(parent)
+        self.h_scale_factor = h_scale
+        self.v_scale_factor = v_scale
+        self.is_master = is_master
+        self.is_stereo = is_stereo
+        self.slider = CustomFaderSlider(is_master=is_master)
+        self.slider.setValue(initial)
+
+        self.scale = ScaleWidget(is_master=is_master)
+        self.scale.setMinimumWidth(46)
+
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(2,2,2,2)
+        layout.setSpacing(6)
+        layout.addWidget(self.scale)
+        layout.addWidget(self.slider)
+
+        self.slider.valueChanged.connect(self._on_value_changed)
+        self.slider.doubleClicked.connect(self.reset_to_zero_db)
+
+        self.apply_scale(self.h_scale_factor, self.v_scale_factor)
+        self.slider.update_color(initial)
+
+    def _on_value_changed(self, value):
+        self.slider.update_color(value)
+        self.valueChanged.emit(value)
+
+    def reset_to_zero_db(self):
+        zero_db_value = MASTER_ZERO_DB_CC if self.is_master else FADER_ZERO_DB_CC
+        self.slider.setValue(zero_db_value)
+
+    def setValue(self, v: int):
+        self.slider.blockSignals(True)
+        self.slider.setValue(int(max(0, min(127, v))))
+        self.slider.blockSignals(False)
+        self.slider.update_color(v)
+
+    def value(self) -> int:
+        return self.slider.value()
 
     def apply_scale(self, h_scale: float, v_scale: float):
-            self.h_scale_factor = h_scale
-            self.v_scale_factor = v_scale
+        self.h_scale_factor = h_scale
+        self.v_scale_factor = v_scale
+        fader_h = int(BASE_FADER_HEIGHT * v_scale)
+        self.slider.setFixedHeight(fader_h)
+    
+        if self.is_stereo:
+            fader_w = int(40 * BASE_STEREO_FADER_WIDTH_MULTIPLIER * h_scale)
+            self.slider.setMinimumWidth(fader_w)
+    
+        self.scale.set_scale(min(h_scale, v_scale))
 
-            self.setMinimumWidth(int(BASE_STRIP_WIDTH * h_scale))
-            self.setMaximumWidth(int(BASE_STRIP_WIDTH * h_scale) + 40)
+class PanDial(QtWidgets.QDial):
+    doubleClicked = QtCore.pyqtSignal()
 
-            title_f = int(max(9, BASE_FONT * h_scale))
-            small_f = int(max(8, BASE_SMALL_FONT * h_scale))
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet(self._get_pan_style())
+
+    def _get_pan_style(self):
+        return """
+            QDial {
+                background-color: #444444;
+                border: 2px solid #666666;
+                border-radius: 29px;
+            }
+        """
+
+    def update_color(self, value: int):
+        if value == PAN_CENTER_CC:
+            self.setStyleSheet(f"""
+                QDial {{
+                    background-color: {PAN_CENTER_COLOR};
+                    border: 2px solid #00cc00;
+                    border-radius: 29px;
+                }}
+            """)
+        else:
+            self.setStyleSheet(self._get_pan_style())
+
+    def mouseDoubleClickEvent(self, e: QtGui.QMouseEvent):
+        if e.button() == QtCore.Qt.LeftButton:
+            self.doubleClicked.emit()
+        super().mouseDoubleClickEvent(e)
+
+class MuteButton(QtWidgets.QPushButton):
+    toggledCC = QtCore.pyqtSignal(int)
+
+    def __init__(self, parent=None):
+        super().__init__("MUTE", parent)
+        self.setCheckable(True)
+        self.update_style()
+        self.toggled.connect(self._on_toggled)
+
+    def _on_toggled(self, on: bool):
+        self.update_style()
+        self.toggledCC.emit(127 if on else 0)
+
+    def update_style(self):
+        if self.isChecked():
+            self.setStyleSheet("QPushButton { background-color: rgb(249,7,7); color: white; font-weight: bold; }")
+        else:
+            self.setStyleSheet("QPushButton { background-color: #444; color: black; }")
+
+    def set_from_cc(self, value: int):
+        on = (value >= 64)
+        self.blockSignals(True)
+        self.setChecked(on)
+        self.blockSignals(False)
+        self.update_style()
+
+class ChannelStrip(QtWidgets.QFrame):
+    scribbleTextChanged = QtCore.pyqtSignal(str, str)
+
+    def __init__(self, title: str, scribble_key: str = "", has_pan: bool=True, has_mute: bool=True, has_scribble: bool=True, h_scale: float=1.0, v_scale: float=1.0, is_master: bool=False, mono_stereo_manager=None, is_stereo_pair: bool=False, stereo_partner_num: int=0, parent=None):
+        super().__init__(parent)
+        self.h_scale_factor = h_scale
+        self.v_scale_factor = v_scale
+        self.is_master = is_master
+        self.is_stereo_pair = is_stereo_pair
+        self.stereo_partner_num = stereo_partner_num
+        self.scribble_key = scribble_key
+        self.mono_stereo_manager = mono_stereo_manager
+        self.stereo_partner_strip = None
+        self.setFrameShape(QtWidgets.QFrame.StyledPanel)
+
+        display_title = title
+        title_color = "black"
         
-            current_color = "rgb(20,20,225)" if self.is_stereo_pair else "black"
-            self.title_label.setStyleSheet(f"font-size: {title_f}px; font-weight: bold; color: {current_color};")
+        if is_stereo_pair and stereo_partner_num > 0:
+            channel_num = int(scribble_key.split()[-1]) if scribble_key else 0
+            display_title = f"Ch {channel_num} - {stereo_partner_num}"
+            title_color = "rgb(20,20,225)"
+        elif scribble_key and "Channel" in scribble_key:
+            channel_num = int(scribble_key.split()[-1])
+            display_title = f"CH {channel_num}"
+
+        self.v = QtWidgets.QVBoxLayout(self)
+        self.v.setContentsMargins(6,6,6,6)
+        self.v.setSpacing(6)
+        self.setMinimumWidth(int(BASE_STRIP_WIDTH * self.h_scale_factor))
+
+        self.title_label = QtWidgets.QLabel(display_title)
+        self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.title_label.setStyleSheet(f"font-weight: bold; color: {title_color};")
+        self.v.addWidget(self.title_label)
+
+        if has_pan:
+            self.pan = PanDial()
+            self.pan.setRange(0,127)
+            self.pan.setValue(PAN_CENTER_CC)
+            self.pan.setNotchesVisible(True)
+            self.pan.doubleClicked.connect(self._pan_reset)
+            self.pan.valueChanged.connect(self._on_pan_changed)
+            self.v.addWidget(self.pan, 0, QtCore.Qt.AlignHCenter)
+
+            self.pan_value = QtWidgets.QLabel("C")
+            self.pan_value.setAlignment(QtCore.Qt.AlignCenter)
+            self.v.addWidget(self.pan_value)
+            self.pan.update_color(PAN_CENTER_CC)
+        else:
+            self.pan = None
+            self.pan_value = None
+
+        if has_mute:
+            self.mute = MuteButton()
+            self.v.addWidget(self.mute)
+        else:
+            self.mute = None
+
+        initial_val = MASTER_ZERO_DB_CC if is_master else FADER_ZERO_DB_CC
+        self.fader = FaderWithScale(initial=initial_val, h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=is_master, is_stereo=is_stereo_pair)
+        self.v.addWidget(self.fader, 1)
+
+        if has_scribble and not is_master:
+            self.scribble = ScribbleStripTextEdit()
+            self.scribble.textCommitted.connect(self._on_scribble_changed)
+            self.v.addWidget(self.scribble)
+        else:
+            self.scribble = None
+
+        if is_master:
+            self.v.addStretch(1)
+
+        self.apply_scale(self.h_scale_factor, self.v_scale_factor)
+
+    def set_stereo_partner(self, partner_strip):
+        self.stereo_partner_strip = partner_strip
+
+    def mirror_from_partner(self, control_type: str, value: int):
+        if control_type == "fader":
+            self.fader.setValue(value)
+        elif control_type == "pan" and self.pan:
+            self.pan.blockSignals(True)
+            self.pan.setValue(value)
+            self.pan.blockSignals(False)
+            self._on_pan_changed(value)
+        elif control_type == "mute" and self.mute:
+            self.mute.set_from_cc(value)
+
+    def sync_to_partner(self, control_type: str, value: int):
+        if self.stereo_partner_strip:
+            self.stereo_partner_strip.mirror_from_partner(control_type, value)
+
+    def set_scribble_text(self, text: str):
+        if self.scribble:
+            self.scribble.blockSignals(True)
+            self.scribble.setText(text)
+            self.scribble.blockSignals(False)
+
+    def _on_scribble_changed(self, new_text: str):
+        if self.scribble_key:
+            self.scribbleTextChanged.emit(self.scribble_key, new_text)
+
+    def _on_pan_changed(self, v: int):
+        if self.pan_value:
+            if v == 64:
+                self.pan_value.setText("C")
+            elif v < 64:
+                left_val = max(v - 64, -63)
+                self.pan_value.setText(str(left_val))
+            else:
+                self.pan_value.setText(str(v))
+
+        if self.pan:
+            self.pan.update_color(v)
+
+    def _pan_reset(self):
+        if self.pan:
+            self.pan.setValue(PAN_CENTER_CC)
+
+    def apply_scale(self, h_scale: float, v_scale: float):
+        self.h_scale_factor = h_scale
+        self.v_scale_factor = v_scale
+
+        self.setMinimumWidth(int(BASE_STRIP_WIDTH * h_scale))
+        self.setMaximumWidth(int(BASE_STRIP_WIDTH * h_scale) + 40)
+
+        title_f = int(max(9, BASE_FONT * h_scale))
+        small_f = int(max(8, BASE_SMALL_FONT * h_scale))
         
-            if self.pan_value:
-                self.pan_value.setStyleSheet(f"font-size: {small_f}px;")
+        current_color = "rgb(20,20,225)" if self.is_stereo_pair else "black"
+        self.title_label.setStyleSheet(f"font-size: {title_f}px; font-weight: bold; color: {current_color};")
+        
+        if self.pan_value:
+            self.pan_value.setStyleSheet(f"font-size: {small_f}px;")
 
-            if self.mute:
-                self.mute.setFixedHeight(int(BASE_BUTTON_H * v_scale))
+        if self.mute:
+            self.mute.setFixedHeight(int(BASE_BUTTON_H * v_scale))
 
-            if self.pan:
-                size = int(BASE_PAN_DIAL * h_scale)
-                self.pan.setFixedSize(size, size)
+        if self.pan:
+            size = int(BASE_PAN_DIAL * h_scale)
+            self.pan.setFixedSize(size, size)
 
-            if self.scribble:
-                scribble_h = int(max(40, 60 * v_scale))
-                self.scribble.setMaximumHeight(scribble_h)
+        if self.scribble:
+            scribble_h = int(max(40, 60 * v_scale))
+            self.scribble.setMaximumHeight(scribble_h)
 
-            self.fader.apply_scale(h_scale, v_scale)
-
+        self.fader.apply_scale(h_scale, v_scale)
+        
 class MixerWindow(QtWidgets.QMainWindow):
     def __init__(self, csv_path: str):
         super().__init__()
@@ -1365,4 +1365,4 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    main()                
+    main()
