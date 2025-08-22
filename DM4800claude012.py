@@ -750,12 +750,25 @@ class ChannelStrip(QtWidgets.QFrame):
         title_color = "black"
         
         if is_stereo_pair and stereo_partner_num > 0:
-            channel_num = int(scribble_key.split()[-1]) if scribble_key else 0
-            display_title = f"Ch {channel_num} - {stereo_partner_num}"
+            if scribble_key and "Channel" in scribble_key:
+                channel_num = int(scribble_key.split()[-1])
+                display_title = f"Ch {channel_num} - {stereo_partner_num}"
+            elif scribble_key and "Bus" in scribble_key:
+                bus_num = int(scribble_key.split()[-1])
+                display_title = f"Bus {bus_num} - {stereo_partner_num}"
+            elif scribble_key and "Aux" in scribble_key:
+                aux_num = int(scribble_key.split()[-1])
+                display_title = f"Aux {aux_num} - {stereo_partner_num}"
             title_color = "rgb(20,20,225)"
         elif scribble_key and "Channel" in scribble_key:
             channel_num = int(scribble_key.split()[-1])
             display_title = f"CH {channel_num}"
+        elif scribble_key and "Bus" in scribble_key:
+            bus_num = int(scribble_key.split()[-1])
+            display_title = f"BUS {bus_num}"
+        elif scribble_key and "Aux" in scribble_key:
+            aux_num = int(scribble_key.split()[-1])
+            display_title = f"AUX {aux_num}"
 
         self.v = QtWidgets.QVBoxLayout(self)
         self.v.setContentsMargins(6,6,6,6)
@@ -1172,31 +1185,83 @@ License: MIT License"""
         hbus = QtWidgets.QHBoxLayout(bus_row)
         hbus.setContentsMargins(2,2,2,2)
         hbus.setSpacing(6)
-        for b in range(1,25):
+        
+        strips_added = 0
+        b = 1
+        
+        while b <= 24 and strips_added < 24:
             scribble_key = f"Bus {b}"
-            strip = ChannelStrip(f"Bus {b}", scribble_key=scribble_key, has_pan=False, has_mute=True, has_scribble=True,
-                               h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=False, mono_stereo_manager=self.mono_stereo_manager)
-            hbus.addWidget(strip)
-            self.bus_widgets[b] = strip
-            self._wire_strip_controls("bus", b, strip)
-            strip.scribbleTextChanged.connect(self._on_scribble_text_changed)
+            
+            if self.mono_stereo_manager.is_stereo_pair(scribble_key):
+                if self.mono_stereo_manager.is_stereo_left(scribble_key):
+                    partner_key = self.mono_stereo_manager.get_stereo_partner(scribble_key)
+                    partner_num = int(partner_key.split()[1]) if partner_key else 0
+                    
+                    strip = ChannelStrip(f"Bus {b}", scribble_key=scribble_key, has_pan=False, has_mute=True, has_scribble=True,
+                                       h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=False, 
+                                       mono_stereo_manager=self.mono_stereo_manager, is_stereo_pair=True, stereo_partner_num=partner_num)
+                    hbus.addWidget(strip)
+                    self.bus_widgets[b] = strip
+                    self._wire_strip_controls("bus", b, strip)
+                    strip.scribbleTextChanged.connect(self._on_scribble_text_changed)
+                    
+                    strips_added += 2
+                    b += 2
+                else:
+                    b += 1
+            else:
+                strip = ChannelStrip(f"Bus {b}", scribble_key=scribble_key, has_pan=False, has_mute=True, has_scribble=True,
+                                   h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=False, mono_stereo_manager=self.mono_stereo_manager)
+                hbus.addWidget(strip)
+                self.bus_widgets[b] = strip
+                self._wire_strip_controls("bus", b, strip)
+                strip.scribbleTextChanged.connect(self._on_scribble_text_changed)
+                
+                strips_added += 1
+                b += 1
+        
         self.rows_v.addWidget(bus_row)
 
         aux_row = QtWidgets.QWidget()
         haux = QtWidgets.QHBoxLayout(aux_row)
         haux.setContentsMargins(2,2,2,2)
         haux.setSpacing(6)
-        for a in range(1,13):
+        
+        strips_added = 0
+        a = 1
+        
+        while a <= 12 and strips_added < 12:
             scribble_key = f"Aux {a}"
-            strip = ChannelStrip(f"Aux {a}", scribble_key=scribble_key, has_pan=False, has_mute=True, has_scribble=True,
-                               h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=False, mono_stereo_manager=self.mono_stereo_manager)
-            haux.addWidget(strip)
-            self.aux_widgets[a] = strip
-            self._wire_strip_controls("aux", a, strip)
-            strip.scribbleTextChanged.connect(self._on_scribble_text_changed)
+        
+            if self.mono_stereo_manager.is_stereo_pair(scribble_key):
+                if self.mono_stereo_manager.is_stereo_left(scribble_key):
+                   partner_key = self.mono_stereo_manager.get_stereo_partner(scribble_key)
+                   partner_num = int(partner_key.split()[1]) if partner_key else 0
+           
+                   strip = ChannelStrip(f"Aux {a}", scribble_key=scribble_key, has_pan=False, has_mute=True, has_scribble=True,
+                                      h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=False, 
+                                      mono_stereo_manager=self.mono_stereo_manager, is_stereo_pair=True, stereo_partner_num=partner_num)
+                   haux.addWidget(strip)
+                   self.aux_widgets[a] = strip
+                   self._wire_strip_controls("aux", a, strip)
+                   strip.scribbleTextChanged.connect(self._on_scribble_text_changed)
+           
+                   strips_added += 2
+                   a += 2
+                else:
+                   a += 1
+            else:
+               strip = ChannelStrip(f"Aux {a}", scribble_key=scribble_key, has_pan=False, has_mute=True, has_scribble=True,
+                                  h_scale=self.h_scale_factor, v_scale=self.v_scale_factor, is_master=False, mono_stereo_manager=self.mono_stereo_manager)
+               haux.addWidget(strip)
+               self.aux_widgets[a] = strip
+               self._wire_strip_controls("aux", a, strip)
+               strip.scribbleTextChanged.connect(self._on_scribble_text_changed)
+           
+               strips_added += 1
+               a += 1
+        
         self.rows_v.addWidget(aux_row)
-
-        self.rows_v.addStretch(1)
 
     def _wire_strip_controls(self, section: str, number: int, strip: ChannelStrip):
         def map_for(t: str) -> Optional[MidiMapping]:
