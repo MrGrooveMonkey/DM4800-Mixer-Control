@@ -731,10 +731,10 @@ class MidiManager(QtCore.QObject):
             self.blockSignals(False)
             self.update_style()
 
-    class ChannelStrip(QtWidgets.QFrame):
+class ChannelStrip(QtWidgets.QFrame):
         scribbleTextChanged = QtCore.pyqtSignal(str, str)
 
-        def __init__(self, title: str, scribble_key: str = "", has_pan: bool=True, has_mute: bool=True, has_scribble: bool=True, h_scale: float=1.0, v_scale: float=1.0, is_master: bool=False, mono_stereo_manager=None, is_stereo_pair: bool=False, stereo_partner_num: int=0, parent=None):
+    def __init__(self, title: str, scribble_key: str = "", has_pan: bool=True, has_mute: bool=True, has_scribble: bool=True, h_scale: float=1.0, v_scale: float=1.0, is_master: bool=False, mono_stereo_manager=None, is_stereo_pair: bool=False, stereo_partner_num: int=0, parent=None):
             super().__init__(parent)
             self.h_scale_factor = h_scale
             self.v_scale_factor = v_scale
@@ -806,10 +806,10 @@ class MidiManager(QtCore.QObject):
 
             self.apply_scale(self.h_scale_factor, self.v_scale_factor)
 
-        def set_stereo_partner(self, partner_strip):
+    def set_stereo_partner(self, partner_strip):
             self.stereo_partner_strip = partner_strip
 
-        def mirror_from_partner(self, control_type: str, value: int):
+    def mirror_from_partner(self, control_type: str, value: int):
             if control_type == "fader":
                 self.fader.setValue(value)
             elif control_type == "pan" and self.pan:
@@ -820,21 +820,21 @@ class MidiManager(QtCore.QObject):
             elif control_type == "mute" and self.mute:
                 self.mute.set_from_cc(value)
 
-        def sync_to_partner(self, control_type: str, value: int):
+    def sync_to_partner(self, control_type: str, value: int):
             if self.stereo_partner_strip:
                 self.stereo_partner_strip.mirror_from_partner(control_type, value)
 
-        def set_scribble_text(self, text: str):
+    def set_scribble_text(self, text: str):
             if self.scribble:
                 self.scribble.blockSignals(True)
                 self.scribble.setText(text)
                 self.scribble.blockSignals(False)
 
-        def _on_scribble_changed(self, new_text: str):
+    def _on_scribble_changed(self, new_text: str):
             if self.scribble_key:
                 self.scribbleTextChanged.emit(self.scribble_key, new_text)
 
-        def _on_pan_changed(self, v: int):
+    def _on_pan_changed(self, v: int):
             if self.pan_value:
                 if v == 64:
                     self.pan_value.setText("C")
@@ -847,11 +847,11 @@ class MidiManager(QtCore.QObject):
             if self.pan:
                 self.pan.update_color(v)
 
-        def _pan_reset(self):
+    def _pan_reset(self):
             if self.pan:
                 self.pan.setValue(PAN_CENTER_CC)
 
-        def apply_scale(self, h_scale: float, v_scale: float):
+    def apply_scale(self, h_scale: float, v_scale: float):
             self.h_scale_factor = h_scale
             self.v_scale_factor = v_scale
 
@@ -879,6 +879,7 @@ class MidiManager(QtCore.QObject):
                 self.scribble.setMaximumHeight(scribble_h)
 
             self.fader.apply_scale(h_scale, v_scale)
+
 class MixerWindow(QtWidgets.QMainWindow):
     def __init__(self, csv_path: str):
         super().__init__()
