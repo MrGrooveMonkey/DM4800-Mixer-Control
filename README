@@ -1,77 +1,74 @@
-Content is still WIP. Updates underway but here is the working README content so far:
+# *Content is still WIP.* 
+- Updates underway but here is the working README content so far:
 
-DM4800-Mixer-Control
-Python-based control interface for the Tascam DM-4800 digital mixer
+# DM4800-Mixer-Control
+- Python-based control interface for the Tascam DM-4800 digital mixer
 
-Overview
-DM4800-Mixer-Control is a Python application that enables external control of the Tascam DM-4800 mixer’s faders, pan pots, and mute switches.
-Ir runs on MacOS and Windows. Might run on Unix but haven't tested it there.
-It provides a GUI for hands-on control via mouse/keyboard (All OS's) or touchscreen (Windows only)
+## Overview
+- DM4800-Mixer-Control is a Python application that enables external control of the Tascam DM-4800 mixer’s faders, pan pots, and mute switches.
+- Ir runs on MacOS and Windows. Might run on Unix but haven't tested it there.
+- It provides a GUI for hands-on control via mouse/keyboard (All OS's) or touchscreen (Windows only)
 
-Features
-GUI control via PyQt5 interface.
-Mixer fader automation — adjust channel levels programmatically or interactively.
-Pan control — modify stereo positioning remotely.
-Mute toggling — programmatically mute or unmute mixer channels.
-Stereo pair display improvements — this branch enhances the way paired channels are shown.
-MIDI communication — leverages mido with python-rtmidi as the backend.
-Editable CSVs allow custom mapping and naming for flexible integration.
+## Features
+- GUI control via PyQt5 interface.
+- Mixer fader automation — adjust channel levels programmatically or interactively.
+- Pan control — modify stereo positioning remotely.
+- Mute toggling — programmatically mute or unmute mixer channels.
+- Stereo pair display improvements — this branch enhances the way paired channels are shown.
+- MIDI communication — leverages mido with python-rtmidi as the backend.
+- Editable CSVs allow custom mapping and naming for flexible integration.
 
-Requirements
+# Requirements
 Install Python 3.x and the following dependencies:
-pip install PyQt5 mido python-rtmidi
+<pre> ```pip install PyQt5 mido python-rtmidi ``` </pre>
 
-Installation & Setup
-# Clone the repository
+#Installation & Setup
+## Clone the repository
 git clone -b MrGrooveMonkey-StereoPair-Display-improvements https://github.com/MrGrooveMonkey/DM4800-Mixer-Control.git
 cd DM4800-Mixer-Control
 
-# (Optional) Create virtual environment
+## (Optional) Create virtual environment
 python3 -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 
-# Install dependencies
-pip install PyQt5 mido python-rtmidi
+## Install dependencies
+<pre> ```pip install PyQt5 mido python-rtmidi ``` </pre>
 
-Usage
-Connect the Tascam DM-4800 to your computer via MIDI (USB/MIDI ports).
-Run the main script:
-python DM4800v013c.py
-Use the GUI to:
-Adjust faders
-Pan channels
-Toggle mute
-View stereo pairs
+# Usage
+### Connect the Tascam DM-4800 to your computer via MIDI (USB/MIDI ports).
+- Run the main script:
+- python DM4800v013c.py
+### Use the GUI to:
+- Adjust faders
+- Pan channels
+- Toggle mute
+- View stereo pairs
 
-Module Listing
-DM4800v013c.py — Main application (latest version).
-DM4800claude012.py & DM4800claude012d.py — Previous iterations, useful for reference or alternate workflows.
-Notes & Further Development
-The application relies on the DM-4800’s MIDI implementation for all remote control functions.
-Stereo pair visualization is an active area of improvement in this branch.
+# Module Listing
+- DM4800v013c.py — Main application (latest version).
+- DM4800claude012.py & DM4800claude012d.py — Previous iterations, useful for reference or alternate workflows.
 
-Controls / GUI Layout
-The GUI is organized into a mixer window containing multiple channel strips:
-Channel Strip (ChannelStrip)
-FaderWithScale — vertical slider showing dB scale.
-PanDial — circular dial with center mark (green).
-MuteButton — toggle mute on/off.
-ScribbleStripTextEdit — text entry for channel name.
-Mono/Stereo label — shows channel format.
-Wide Stereo Strip (WideStereoStrip)
-Used for stereo-paired channels.
-Wider fader to represent linked L/R.
-MixerWindow (main window)
-Scrollable list of channel strips.
-Menu options for loading/saving settings.
-Access to MIDI Monitor window.
-Dialogs & Tools
-MidiPortSelectionDialog — choose MIDI in/out ports.
-MidiMonitorWindow — live view of MIDI messages.
+# Notes & Further Development
+- The application relies on the DM-4800’s MIDI implementation for all remote control functions.
+- Stereo pair visualization is an active area of improvement in this branch.
 
-Configuration Files
-DM4800_CC_Values.csv — MIDI CC mapping values.
-scribblestrip.csv — custom channel names for scribble strips.
-DM4800MonoStereo.csv — mono/stereo configuration data.
-dm4800_settings.json — saved settings (GUI state, ports, etc.).
-DM4800_MIDI_Log.txt — log of recent MIDI messages.
+#Controls / GUI Layout
+## The GUI is organized into a mixer window containing multiple channel strips:
+| Element                 | Function                                       |
+| ------------------      | ---------------------------------------        |
+| **MixerWindow**         | Scrollable view and control of channel strips. |
+| **Fader Slider**        | Adjusts channel level (dB scale shown).        |
+| **Mono/Stereo label**   | Clearly shows channel format.                  |
+| **Pan/Balance Dial**    | Sets stereo position, center in green.         |
+| **Mute Button**         | Toggles mute on/off.                           |
+| **Scribble Strip**      | Editable channel label text.                   |
+| **Stereo Strip**        | Wide strip for stereo-paired channels.         |
+| **MIDI Monitor**        | Displays live MIDI messages.                   |
+| **MIDI Port Selection** |  Choose MIDI in/out ports                      |
+
+# Configuration Files                                                 
+| ```DM4800_CC_Values.csv ```|  MIDI CC mapping values.                   |
+| ```scribblestrip.csv    ```|  custom channel names for scribble strips. |
+| ```DM4800MonoStereo.csv ```|  mono/stereo configuration data.           |
+| ```dm4800_settings.json ```|  saved settings (GUI state, ports, etc.).  |
+| ```DM4800_MIDI_Log.txt  ```|  log of recent MIDI messages.              |
