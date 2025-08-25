@@ -15,6 +15,7 @@ Pan control — modify stereo positioning remotely.
 Mute toggling — programmatically mute or unmute mixer channels.
 Stereo pair display improvements — this branch enhances the way paired channels are shown.
 MIDI communication — leverages mido with python-rtmidi as the backend.
+Editable CSVs allow custom mapping and naming for flexible integration.
 
 Requirements
 Install Python 3.x and the following dependencies:
@@ -48,3 +49,29 @@ DM4800claude012.py & DM4800claude012d.py — Previous iterations, useful for ref
 Notes & Further Development
 The application relies on the DM-4800’s MIDI implementation for all remote control functions.
 Stereo pair visualization is an active area of improvement in this branch.
+
+Controls / GUI Layout
+The GUI is organized into a mixer window containing multiple channel strips:
+Channel Strip (ChannelStrip)
+FaderWithScale — vertical slider showing dB scale.
+PanDial — circular dial with center mark (green).
+MuteButton — toggle mute on/off.
+ScribbleStripTextEdit — text entry for channel name.
+Mono/Stereo label — shows channel format.
+Wide Stereo Strip (WideStereoStrip)
+Used for stereo-paired channels.
+Wider fader to represent linked L/R.
+MixerWindow (main window)
+Scrollable list of channel strips.
+Menu options for loading/saving settings.
+Access to MIDI Monitor window.
+Dialogs & Tools
+MidiPortSelectionDialog — choose MIDI in/out ports.
+MidiMonitorWindow — live view of MIDI messages.
+
+Configuration Files
+DM4800_CC_Values.csv — MIDI CC mapping values.
+scribblestrip.csv — custom channel names for scribble strips.
+DM4800MonoStereo.csv — mono/stereo configuration data.
+dm4800_settings.json — saved settings (GUI state, ports, etc.).
+DM4800_MIDI_Log.txt — log of recent MIDI messages.
