@@ -94,4 +94,5 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 | ```DM4800MonoStereo.csv```|  mono/stereo configuration data.           |
 | ```dm4800_settings.json```|  saved settings (GUI state, ports, etc.).  |
 | ```DM4800_MIDI_Log.txt ```|  log of recent MIDI messages.              |
-| ```License.txt```         |  License acceptance file.                  |
+| ```License.txt```         |  License info file.                        |
+| ```DM4800_license.txt```  |  License acceptance record.                |
