@@ -12,6 +12,7 @@
 - Mute control —  mute or unmute mixer channels.
 - Stereo pair display — enhances the way paired channels are shown.
 - MIDI communication — uses MIDI CC commands to control the DM4800 and to receive updates to Faders, Pan/Balance knobs, and Mutes from the DM4800.
+- MIDI logging and monitoring - running log that has the last 1,000 MIDI commands sent to or from the app. Can be viewed from the MIDI menu.
 - Editable CSVs - allow custom mapping and naming for stereo channel pairs and scribble strips.
 - Color customization - change the colors of various UI elements such as Fader caps, Pan/Balance knobs, and application background.
 
