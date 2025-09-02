@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DM4800 Mixer Controller v013e
+DM4800 Mixer Controller v022a
 Dependencies: pip install PyQt5 mido python-rtmidi
 """
 
@@ -2770,7 +2770,7 @@ class MixerWindow(QtWidgets.QMainWindow):
         self.midi_monitor.activateWindow()
 
     def _show_about(self):
-        about_text = """Version: v019a
+        about_text = """Version: v022a
         Author: GrooveMonkey
         License: MIT License"""
         QtWidgets.QMessageBox.about(self, "About DM4800 Mixer Controller", about_text)
