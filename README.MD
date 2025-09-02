@@ -17,7 +17,7 @@
 
 ## 📷 Screenshots
 ![Screenshot 1](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer1.jpeg)
-![Screenshot 2](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/48080mixer2.jpeg)
+![Screenshot 2](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer2.jpeg)
 ![Screenshot 3](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer3.jpeg)
 
 # 🚀 Requirements
@@ -38,10 +38,10 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 
 # Usage
 ## NOTE: 
-- There is no way that I have found to query the 4800 for the status of stereo pairings, current values of the faders, pan/bal, or mutes. Therefore we need to update this info manually.
-### Update the DM4800MonoStereo.csv file to match your 4800 mono/stereo pairings. 
+- There is no way that I have found to query the DM4800 for the status of stereo pairings, current values of the faders, pan/bal, or mutes. Therefore we need to update this info manually.
+### Update the DM4800MonoStereo.csv file to match your DM4800 mono/stereo pairings. 
 - The format should be evident when you look at the file so just stick to the format and the app will recognize it. 
-- If you make changes to stereo relationships on the 4800 be sure to update this file and restart the app.
+- If you make changes to stereo relationships on the DM4800 be sure to update this file and restart the app.
 ### Update the scribblestrip.csv file if you want to preload the scribble strips under the channels, buses, and auxes.
 - This is an optional feature I added to the app to give you scribble strips. 
 - You can edit these in the app and they will be saved to the file automatically.
@@ -49,9 +49,10 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 - See the Notes sections below for more details.
 ### Connect the Tascam DM-4800 to your computer via MIDI (USB or DIN MIDI ports).
 - Run the main script:
--- python DM4800v021a.py (as of 1 Sep 2025). If there is a newer version use that one.
+-- python DM4800v023a.py (as of 1 Sep 2025). If there is a newer version use that one.
+- Accept the license agreement (MIT License which is 2 short paragraphs)
 - Select the MIDI In and MIDI Out ports to use from the MIDI menu in the app.
-- You should now be able to control the 4800 and have the app update itself any time you adjust the 4800.
+- You should now be able to control the DM4800 and have the app update itself any time you adjust the DM4800.
 ### Use the GUI to:
 - Adjust faders
 - Pan mono channels
@@ -60,11 +61,11 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 - View stereo pairs
 
 # Module Listing
-- DM4800v021a.py — Main application (latest version).
+- DM4800v023a.py — Main application (latest version).
 - DM4800_CC_Values.csv - CC values file that must be in the same folder where the app is run from. 
 
 # Notes & Further Development
-- The application relies on the DM-4800’s MIDI implementation for all remote control functions. It uses MIDI CC Values to control the DM4800 and to respond to changes made to Faders, Pan/Balance, and Mute on the DM4800.
+- The application relies on the DM4800’s MIDI implementation for all remote control functions. It uses MIDI CC Values to control the DM4800 and to respond to changes made to Faders, Pan/Balance, and Mute on the DM4800.
 - The DM4800_CC_Values.csv contains all of the MIDI CC mapping for the app to communicate with the DM4800. These should line up with your mixer settings. See MIDI CONFIG NOTES section below for more details.
 
 # MIDI Config Notes
@@ -92,3 +93,4 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 | ```DM4800MonoStereo.csv```|  mono/stereo configuration data.           |
 | ```dm4800_settings.json```|  saved settings (GUI state, ports, etc.).  |
 | ```DM4800_MIDI_Log.txt ```|  log of recent MIDI messages.              |
+| ```License.txt```         |  License acceptance file.                  |
