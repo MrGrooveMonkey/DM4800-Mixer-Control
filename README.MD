@@ -15,6 +15,9 @@
 - MIDI communication — leverages mido with python-rtmidi as the backend.
 - Editable CSVs allow custom mapping and naming for flexible integration.
 
+## 📷 Screenshots
+
+
 # 🚀 Requirements
 Install Python 3.x and the following dependencies:
 ```pip install PyQt5 mido python-rtmidi ```
