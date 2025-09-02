@@ -7,62 +7,62 @@ Channel 5,Tom 1
 Channel 6,Tom 2
 Channel 7,Perc 1
 Channel 8,Perc 2
-Channel 9,Aug Str/Vox
-Channel 10,Aug Str/Vox R
-Channel 11,MS20/AtomMG1
-Channel 12,MS20/AtomMG1 R
+Channel 9,-
+Channel 10,-
+Channel 11,-
+Channel 12,-
 Channel 13,Prohpet 5
 Channel 14,Prohet 5 R
-Channel 15,SEM/Voc
-Channel 16,SEM/Voc R
-Channel 17,GX80/PS3300
-Channel 18,GX80/PS3300 R
-Channel 19,SurgeXT
-Channel 20,SurgeXT R
-Channel 21,Omni
-Channel 22,Omni R
+Channel 15,-
+Channel 16,-
+Channel 17,-
+Channel 18,-
+Channel 19,-
+Channel 20,-
+Channel 21,-
+Channel 22,-
 Channel 23,Rhodes
 Channel 24,Rhodes R
-Channel 25,Hydra
-Channel 26,Hydra R
-Channel 27,A6
-Channel 28,A6 R
-Channel 29,OB-6
-Channel 30,OB-6 R
-Channel 31,Matriarch
-Channel 32,Matriarch R
-Channel 33,Integra
-Channel 34,Integra R
-Channel 35,Mavis
-Channel 36,Sub25
-Channel 37,Minitaur
-Channel 38,SE-02
-Channel 39,Osmose
-Channel 40,Osmose R
-Channel 41,OpSix
-Channel 42,OpSix R
-Channel 43,VDrums
-Channel 44,VDrums R
-Channel 45,GP FX
-Channel 46,GP FX R
-Channel 47,DM4800-2
-Channel 48,DM4800-2 R
-Channel 49,M5K 1
-Channel 50,M5K 1 R
-Channel 51,M5K 2
-Channel 52,M5K 2 R
-Channel 53,M5K 3
-Channel 54,M5K 3 R
-Channel 55,M5K 4
-Channel 56,M5K 4 R
+Channel 25,-
+Channel 26,-
+Channel 27,-
+Channel 28,-
+Channel 29,-
+Channel 30,-
+Channel 31,-
+Channel 32,-
+Channel 33,-
+Channel 34,-
+Channel 35,-
+Channel 36,-
+Channel 37,-
+Channel 38,-
+Channel 39,-
+Channel 40,-
+Channel 41,-
+Channel 42,-
+Channel 43,-
+Channel 44,-
+Channel 45,-
+Channel 46,-
+Channel 47,-
+Channel 48,-
+Channel 49,-
+Channel 50,-
+Channel 51,-
+Channel 52,-
+Channel 53,-
+Channel 54,-
+Channel 55,-
+Channel 56,-
 Channel 57,-
 Channel 58,-
 Channel 59,Rad L ASNRTN7 Aux11
 Channel 60,Rad R ASNRTN8 Aux12
-Channel 61,MINI2 2TRK
-Channel 62,MINI2 2TRK R
-Channel 63,DM4800-2 DIN 1
-Channel 64,DM4800-2 DIN 1 R
+Channel 61,-
+Channel 62,-
+Channel 63,-
+Channel 64,-
 Bus 1,Drums L
 Bus 2,Drums R
 Bus 3,Digital Synths
@@ -87,15 +87,16 @@ Bus 21,REVERB
 Bus 22,REVERB R
 Bus 23,-
 Bus 24,-
-Aux 1,M5k1
-Aux 2,M5K1 R
-Aux 3,M5K2
-Aux 4,M5K2 R
-Aux 5,M5K3
-Aux 6,M5K3 R
-Aux 7,M5K4
-Aux 8,M5K4 R
+Aux 1,-
+Aux 2,-
+Aux 3,-
+Aux 4,-
+Aux 5,-
+Aux 6,-
+Aux 7,-
+Aux 8,-
 Aux 9,-
 Aux 10,-
 Aux 11,Radial FX     Mono L
 Aux 12,Radial FX     Mono R
+
