@@ -1,12 +1,12 @@
-#DM4800-Mixer-Control
+# DM4800-Mixer-Control
 - Python-based control interface for the Tascam DM-4800 digital mixer
 
-##Overview
+## Overview
 - DM4800-Mixer-Control is a Python application that enables external control of the Tascam DM-4800 mixer’s faders, pan pots, and mute switches.
-- Ir runs on MacOS and Windows. Might run on Unix but haven't tested it there.
+- Ir runs on MacOS and Windows. Should run on Unix but haven't tested it there.
 - It provides a GUI for hands-on control via mouse/keyboard (All OS's) or touchscreen (Windows only)
 
-##✨ Features
+## ✨ Features
 - GUI control via PyQt5 interface.
 - Mixer fader automation — adjust channel levels programmatically or interactively.
 - Pan control — modify stereo positioning remotely.
@@ -15,11 +15,11 @@
 - MIDI communication — leverages mido with python-rtmidi as the backend.
 - Editable CSVs allow custom mapping and naming for flexible integration.
 
-#🚀 Requirements
+# 🚀 Requirements
 Install Python 3.x and the following dependencies:
 ```pip install PyQt5 mido python-rtmidi ```
 
-#📝 Installation & Setup
+# 📝 Installation & Setup
 ## Clone the repository
 git clone -b MrGrooveMonkey-StereoPair-Display-improvements https://github.com/MrGrooveMonkey/DM4800-Mixer-Control.git
 cd DM4800-Mixer-Control
@@ -32,13 +32,25 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 ```pip install PyQt5 mido python-rtmidi ``` 
 
 # Usage
+## NOTE: 
+- There is no way that I have found to query the 4800 for the status of stereo pairings, current values of the faders, pan/bal, or mutes. Therefore we need to update this info manually.
+### Update the DM4800MonoStereo.csv file to match your 4800 mono/stereo pairings. 
+- The format should be evident when you look at the file so just stick to the format and the app will recognize it. 
+- If you make changes to stereo relationships on the 4800 be sure to update this file and restart the app.
+### Update the scribblestrip.csv file if you want to preload the scribble strips under the channels, buses, and auxes.
+- This is an optional feature I added to the app to give you scribble strips. 
+- You can edit these in the app and they will be saved to the file automatically.
+### Enusre the MIDI CONFIG matches your DM4800 
+- See the Notes sections below for more details.
 ### Connect the Tascam DM-4800 to your computer via MIDI (USB or DIN MIDI ports).
 - Run the main script:
-- python DM4800v021a.py (as of 1 Sep 2025)
-- Select the MIDI In and MIDI Out ports to use from the MIDI menu in the app
+-- python DM4800v021a.py (as of 1 Sep 2025). If there is a newer version use that one.
+- Select the MIDI In and MIDI Out ports to use from the MIDI menu in the app.
+- You should now be able to control the 4800 and have the app update itself any time you adjust the 4800.
 ### Use the GUI to:
 - Adjust faders
-- Pan channels
+- Pan mono channels
+- Balance stereo channels
 - Toggle mute
 - View stereo pairs
 
@@ -70,8 +82,8 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 | **Settings Menu**       |  Choose colors for various UI elements.        |
 
 # Configuration Files                                                 
-| ```DM4800_CC_Values.csv ```|  MIDI CC mapping values.                   |
-| ```scribblestrip.csv    ```|  custom channel names for scribble strips. |
-| ```DM4800MonoStereo.csv ```|  mono/stereo configuration data.           |
-| ```dm4800_settings.json ```|  saved settings (GUI state, ports, etc.).  |
-| ```DM4800_MIDI_Log.txt  ```|  log of recent MIDI messages.              |
+| ```DM4800_CC_Values.csv```|  MIDI CC mapping values.                   |
+| ```scribblestrip.csv```   |  custom channel names for scribble strips. |
+| ```DM4800MonoStereo.csv```|  mono/stereo configuration data.           |
+| ```dm4800_settings.json```|  saved settings (GUI state, ports, etc.).  |
+| ```DM4800_MIDI_Log.txt ```|  log of recent MIDI messages.              |
