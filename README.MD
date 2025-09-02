@@ -88,7 +88,9 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 | **MIDI Port Selection** |  Choose MIDI in/out ports                      |
 | **Settings Menu**       |  Choose colors for various UI elements.        |
 
-# Configuration Files                                                 
+# Configuration Files
+| File name                 |  Purpose                                   |
+| --------------------      | ---------------------------------------    |  
 | ```DM4800_CC_Values.csv```|  MIDI CC mapping values.                   |
 | ```scribblestrip.csv```   |  custom channel names for scribble strips. |
 | ```DM4800MonoStereo.csv```|  mono/stereo configuration data.           |
