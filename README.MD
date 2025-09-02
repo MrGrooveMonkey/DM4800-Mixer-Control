@@ -16,6 +16,7 @@
 - Editable CSVs allow custom mapping and naming for flexible integration.
 
 ## 📷 Screenshots
+https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer1.jpeg
 
 
 # 🚀 Requirements
@@ -69,7 +70,7 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 - Compare the values in the DM4800_CC_Values.csv file to your mixer settings located at ALT-->MIDI-->Ctrl Chg MIX tab
 - Be sure to check against all the targets in the POD 4 scroll section
 
-#Controls / GUI Layout
+# Controls / GUI Layout
 ## The GUI is organized into a mixer window containing multiple channel strips:
 | Element                 | Function                                       |
 | ------------------      | ---------------------------------------        |
