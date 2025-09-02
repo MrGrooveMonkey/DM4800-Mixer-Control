@@ -22,7 +22,7 @@
 ![Screenshot 3](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer3.jpeg)
 
 ## User Guide
-![User Guide] (https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/288ee1f7ec4a7f74106b73c1832bdfcaa495dee9/DM4800%20Mixer%20Control%20-%20%20%20User%20Guide%20v001.pdf)
+![User Guide](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/288ee1f7ec4a7f74106b73c1832bdfcaa495dee9/DM4800%20Mixer%20Control%20-%20%20%20User%20Guide%20v001.pdf)
 
 # 🚀 Requirements
 Install Python 3.x and the following dependencies:
