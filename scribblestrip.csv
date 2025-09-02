@@ -1,0 +1,101 @@
+Channel_Bus_Aux,Value
+Channel 1,Kick
+Channel 2,Snare
+Channel 3,HH
+Channel 4,Cymbal
+Channel 5,Tom 1
+Channel 6,Tom 2
+Channel 7,Perc 1
+Channel 8,Perc 2
+Channel 9,Aug Str/Vox
+Channel 10,Aug Str/Vox R
+Channel 11,MS20/AtomMG1
+Channel 12,MS20/AtomMG1 R
+Channel 13,Prohpet 5
+Channel 14,Prohet 5 R
+Channel 15,SEM/Voc
+Channel 16,SEM/Voc R
+Channel 17,GX80/PS3300
+Channel 18,GX80/PS3300 R
+Channel 19,SurgeXT
+Channel 20,SurgeXT R
+Channel 21,Omni
+Channel 22,Omni R
+Channel 23,Rhodes
+Channel 24,Rhodes R
+Channel 25,Hydra
+Channel 26,Hydra R
+Channel 27,A6
+Channel 28,A6 R
+Channel 29,OB-6
+Channel 30,OB-6 R
+Channel 31,Matriarch
+Channel 32,Matriarch R
+Channel 33,Integra
+Channel 34,Integra R
+Channel 35,Mavis
+Channel 36,Sub25
+Channel 37,Minitaur
+Channel 38,SE-02
+Channel 39,Osmose
+Channel 40,Osmose R
+Channel 41,OpSix
+Channel 42,OpSix R
+Channel 43,VDrums
+Channel 44,VDrums R
+Channel 45,GP FX
+Channel 46,GP FX R
+Channel 47,DM4800-2
+Channel 48,DM4800-2 R
+Channel 49,M5K 1
+Channel 50,M5K 1 R
+Channel 51,M5K 2
+Channel 52,M5K 2 R
+Channel 53,M5K 3
+Channel 54,M5K 3 R
+Channel 55,M5K 4
+Channel 56,M5K 4 R
+Channel 57,-
+Channel 58,-
+Channel 59,Rad L ASNRTN7 Aux11
+Channel 60,Rad R ASNRTN8 Aux12
+Channel 61,MINI2 2TRK
+Channel 62,MINI2 2TRK R
+Channel 63,DM4800-2 DIN 1
+Channel 64,DM4800-2 DIN 1 R
+Bus 1,Drums L
+Bus 2,Drums R
+Bus 3,Digital Synths
+Bus 4,Digital Synths
+Bus 5,Analog Synths
+Bus 6,Analog Synths
+Bus 7,-
+Bus 8,-
+Bus 9,-
+Bus 10,-
+Bus 11,H90
+Bus 12,H90 R
+Bus 13,-
+Bus 14,-
+Bus 15,BiFilter
+Bus 16,Prismatic Wall
+Bus 17,MODULATION
+Bus 18,MODULATION R
+Bus 19,DELAY
+Bus 20,DELAY R
+Bus 21,REVERB
+Bus 22,REVERB R
+Bus 23,-
+Bus 24,-
+Aux 1,M5k1
+Aux 2,M5K1 R
+Aux 3,M5K2
+Aux 4,M5K2 R
+Aux 5,M5K3
+Aux 6,M5K3 R
+Aux 7,M5K4
+Aux 8,M5K4 R
+Aux 9,-
+Aux 10,-
+Aux 11,Radial FX     Mono L
+Aux 12,Radial FX     Mono R
