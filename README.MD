@@ -7,13 +7,13 @@
 - It provides a GUI for hands-on control via mouse/keyboard (All OS's) or touchscreen (Windows only)
 
 ## ✨ Features
-- GUI control via PyQt5 interface.
-- Mixer fader automation — adjust channel levels programmatically or interactively.
-- Pan control — modify stereo positioning remotely.
-- Mute toggling — programmatically mute or unmute mixer channels.
-- Stereo pair display improvements — this branch enhances the way paired channels are shown.
-- MIDI communication — leverages mido with python-rtmidi as the backend.
-- Editable CSVs allow custom mapping and naming for flexible integration.
+- Fader control — adjust channel levels.
+- Pan control — modify stereo positioning.
+- Mute control —  mute or unmute mixer channels.
+- Stereo pair display — enhances the way paired channels are shown.
+- MIDI communication — uses MIDI CC commands to control the DM4800 and to receive updates to Faders, Pan/Balance knobs, and Mutes from the DM4800.
+- Editable CSVs - allow custom mapping and naming for stereo channel pairs and scribble strips.
+- Color customization - change the colors of various UI elements such as Fader caps, Pan/Balance knobs, and application background.
 
 ## 📷 Screenshots
 ![Screenshot 1](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer1.jpeg)
@@ -37,7 +37,7 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 ```pip install PyQt5 mido python-rtmidi ``` 
 
 # Usage
-## NOTE: 
+## **NOTE:** 
 - There is no way that I have found to query the DM4800 for the status of stereo pairings, current values of the faders, pan/bal, or mutes. Therefore we need to update this info manually.
 ### Update the DM4800MonoStereo.csv file to match your DM4800 mono/stereo pairings. 
 - The format should be evident when you look at the file so just stick to the format and the app will recognize it. 
@@ -49,19 +49,20 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 - See the Notes sections below for more details.
 ### Connect the Tascam DM-4800 to your computer via MIDI (USB or DIN MIDI ports).
 - Run the main script:
--- python DM4800v023a.py (as of 1 Sep 2025). If there is a newer version use that one.
+-- python DM4800v0.9.0.py (as of 2 Sep 2025). 
 - Accept the license agreement (MIT License which is 2 short paragraphs)
 - Select the MIDI In and MIDI Out ports to use from the MIDI menu in the app.
-- You should now be able to control the DM4800 and have the app update itself any time you adjust the DM4800.
+- You should now be able to control the DM4800 and have the app update itself any time you adjust the Faders, Pan/Balance knobs, and Mutes on the DM4800.
 ### Use the GUI to:
 - Adjust faders
 - Pan mono channels
 - Balance stereo channels
 - Toggle mute
 - View stereo pairs
+- Customize colors
 
 # Module Listing
-- DM4800v023a.py — Main application (latest version).
+- DM4800v0.9.0.py — Main application (latest version).
 - DM4800_CC_Values.csv - CC values file that must be in the same folder where the app is run from. 
 
 # Notes & Further Development
