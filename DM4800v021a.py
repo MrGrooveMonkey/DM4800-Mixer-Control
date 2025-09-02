@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DM4800 Mixer Controller v013e
+DM4800 Mixer Controller v021a
 Dependencies: pip install PyQt5 mido python-rtmidi
 """
 
