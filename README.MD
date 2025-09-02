@@ -16,8 +16,9 @@
 - Editable CSVs allow custom mapping and naming for flexible integration.
 
 ## 📷 Screenshots
-https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer1.jpeg
-
+![Screenshot 1](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer1.jpeg)
+![Screenshot 2](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/48080mixer2.jpeg)
+![Screenshot 3](https://github.com/MrGrooveMonkey/DM4800-Mixer-Control/blob/820b3f0feadbc2fae3c5d5a1070d270938bce256/4800mixer3.jpeg)
 
 # 🚀 Requirements
 Install Python 3.x and the following dependencies:
